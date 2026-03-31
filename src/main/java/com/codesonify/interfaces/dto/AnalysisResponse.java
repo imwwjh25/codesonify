@@ -23,6 +23,11 @@ public class AnalysisResponse {
     private String message;
 
     /**
+     * 分析 ID（用于后续音乐生成和报告生成）
+     */
+    private String analysisId;
+
+    /**
      * 项目分析结果
      */
     private ProjectAnalysisDTO projectAnalysis;

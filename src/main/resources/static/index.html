@@ -253,6 +253,9 @@
             <div class="form-group">
                 <label for="analysisId">分析 ID</label>
                 <input type="text" id="analysisId" class="form-control" placeholder="输入分析 ID">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    💡 提示：先在上面「代码分析」模块进行分析，分析 ID 会自动填充到这里
+                </small>
             </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="generateMusic()">生成音乐</button>
@@ -263,6 +266,7 @@
                 <p>正在生成音乐...</p>
             </div>
             <div id="musicResult" class="hidden">
+                <p style="margin-bottom: 10px; color: #2e7d32;">✅ 音乐生成成功！点击播放按钮收听代码音乐。</p>
                 <audio id="audioPlayer" controls></audio>
             </div>
         </div>
@@ -390,10 +394,19 @@
             document.getElementById('analyzeResult').innerHTML = html;
 
             // 自动填充分析 ID
-            const analysisId = data.projectAnalysis?.projectName;
-            if (analysisId) {
-                document.getElementById('analysisId').value = analysisId;
-                document.getElementById('reportAnalysisId').value = analysisId;
+            if (data.analysisId) {
+                document.getElementById('analysisId').value = data.analysisId;
+                document.getElementById('reportAnalysisId').value = data.analysisId;
+
+                // 显示提示
+                const statsHtml = document.querySelector('#analyzeResult .stats-grid');
+                if (statsHtml) {
+                    const tipHtml = `<div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 8px; color: #2e7d32;">
+                        ✅ 分析完成！分析 ID: <strong>${data.analysisId}</strong><br>
+                        <small>已自动填充到"生成代码音乐"和"生成报告"表单中</small>
+                    </div>`;
+                    statsHtml.insertAdjacentHTML('afterend', tipHtml);
+                }
             }
         }
 

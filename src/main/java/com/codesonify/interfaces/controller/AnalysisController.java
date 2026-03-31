@@ -156,6 +156,7 @@ public class AnalysisController {
         return AnalysisResponse.builder()
                 .success(true)
                 .message("分析成功")
+                .analysisId(analysisId)
                 .projectAnalysis(AnalysisResponse.ProjectAnalysisDTO.builder()
                         .projectName(analysis.getProjectName())
                         .projectPath(analysis.getProjectPath())
