@@ -1,8 +1,8 @@
 # CodeSonify 项目状态
 
-**当前 Phase**: Phase 3 - 可视化引擎
+**当前 Phase**: Phase 5 - 代码异味检测
 
-**当前状态**: Phase 3 已完成
+**当前状态**: Phase 5 开发中
 
 ---
 
@@ -96,23 +96,20 @@
 
 ---
 
-## Phase 2 计划执行状态
+## Phase 5 计划执行状态
 
 | Plan | Description | Wave | Status |
 |------|-------------|------|--------|
-| 2.1 | 完善 ComplexityToMusicMapper 映射逻辑 | 1 | done |
-| 2.2 | 实现 MidiGenerator MIDI 生成器 | 2 | done |
-| 2.3 | 编写单元测试 | 3 | done |
-
----
-
-## Phase 3 计划执行状态
-
-| Plan | Description | Wave | Status |
-|------|-------------|------|--------|
-| 3.1 | 实现 DependencyGraphExporter | 1 | done |
-| 3.2 | 实现 HtmlReportGenerator | 2 | done |
-| 3.3 | 编写单元测试 | 3 | done |
+| 5.1 | 创建代码异味实体和值对象 | 1 | pending |
+| 5.2 | 实现 CodeSmellDetector 领域服务 | 1 | pending |
+| 5.3 | 实现 DuplicateCodeAnalyzer 领域服务 | 1 | pending |
+| 5.4 | 实现 CodeSmellAggregator 领域服务 | 1 | pending |
+| 5.5 | 创建 DTO/Request/Response | 2 | pending |
+| 5.6 | 实现 CodeSmellAnalysisService 应用服务 | 2 | pending |
+| 5.7 | 实现 CodeSmellController 控制器 | 2 | pending |
+| 5.8 | 集成到 HTML 报告 | 3 | pending |
+| 5.9 | 实现 Swagger API 文档 | 3 | pending |
+| 5.10 | 编写单元测试 | 3 | pending |
 
 ---
 
