@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "SessionStart": [
+      "node .claude/hooks/gsd-check-update.js",
+      "node .claude/hooks/gsd-statusline.js"
+    ],
+    "PostToolUse": [
+      "node .claude/hooks/gsd-context-monitor.js"
+    ],
+    "PreToolUse": [
+      "node .claude/hooks/gsd-prompt-guard.js"
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(date:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(sort:*)",
+      "Bash(grep:*)",
+      "Bash(tr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)"
+    ]
+  }
+}
