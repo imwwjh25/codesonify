@@ -3,7 +3,6 @@ package com.codesonify.interfaces.controller;
 import com.codesonify.application.service.CodeSonificationService;
 import com.codesonify.domain.entity.ProjectAnalysis;
 import com.codesonify.interfaces.dto.SonificationResponse;
-// import com.codesonify.repository.AnalysisProducer;
 import com.codesonify.repository.CacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,8 +35,6 @@ public class SonificationController {
 
     private final CodeSonificationService codeSonificationService;
     private final CacheService cacheService;
-    // TODO: Kafka 异步支持 - 恢复时取消注释
-    // private final AnalysisProducer analysisProducer;
 
     /**
      * 生成代码音乐
@@ -255,52 +252,6 @@ public class SonificationController {
             return ResponseEntity.internalServerError().build();
         }
     }
-
-    // TODO: Kafka 异步支持 - 恢复时取消注释
-    /**
-     * 异步生成代码音乐
-     *
-     * @param analysisId 分析 ID
-     * @return 任务 ID
-     */
-    /*
-    @Operation(summary = "异步生成代码音乐", description = "异步将代码复杂度转换为音乐")
-    @PostMapping("/generate/async")
-    public ResponseEntity<SonificationResponse> generateMusicAsync(
-            @Parameter(description = "分析 ID", required = true)
-            @RequestParam String analysisId) {
-        try {
-            log.info("异步生成代码音乐，分析 ID: {}", analysisId);
-
-            // 检查分析结果是否存在
-            ProjectAnalysis analysis = cacheService.getCachedAnalysis(analysisId);
-            if (analysis == null) {
-                return ResponseEntity.badRequest().body(SonificationResponse.builder()
-                        .success(false)
-                        .error("分析结果不存在：" + analysisId)
-                        .build());
-            }
-
-            // 生成任务 ID 并发送 Kafka 消息
-            String taskId = UUID.randomUUID().toString();
-            analysisProducer.sendSonificationTask(taskId, analysisId);
-
-            SonificationResponse response = SonificationResponse.builder()
-                    .success(true)
-                    .message("声音化任务已提交")
-                    .build();
-
-            return ResponseEntity.accepted().body(response);
-
-        } catch (Exception e) {
-            log.error("异步音乐生成失败，分析 ID: {}", analysisId, e);
-            return ResponseEntity.internalServerError().body(SonificationResponse.builder()
-                    .success(false)
-                    .error("提交失败：" + e.getMessage())
-                    .build());
-        }
-    }
-    */
 
     /**
      * 计算音乐时长（估算）

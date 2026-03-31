@@ -1,11 +1,8 @@
 package com.codesonify.interfaces.controller;
 
 import com.codesonify.application.service.CodeAnalysisService;
-// import com.codesonify.domain.entity.AnalysisTaskStatus;
 import com.codesonify.domain.entity.ProjectAnalysis;
 import com.codesonify.interfaces.dto.AnalysisResponse;
-// import com.codesonify.repository.AnalysisConsumer;
-// import com.codesonify.repository.AnalysisProducer;
 import com.codesonify.repository.CacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,9 +29,6 @@ public class AnalysisController {
 
     private final CodeAnalysisService codeAnalysisService;
     private final CacheService cacheService;
-    // TODO: Kafka 异步支持 - 恢复时取消注释
-    // private final AnalysisProducer analysisProducer;
-    // private final AnalysisConsumer analysisConsumer;
 
     /**
      * 分析项目代码（同步）
@@ -77,53 +71,6 @@ public class AnalysisController {
                     .build());
         }
     }
-
-    // TODO: Kafka 异步支持 - 恢复时取消注释
-    /**
-     * 分析项目代码（异步）
-     *
-     * @param projectPath 项目路径
-     * @return 任务 ID
-     */
-    /*
-    @Operation(summary = "分析项目代码（异步）", description = "异步分析整个项目的代码复杂度，通过 Kafka 处理")
-    @PostMapping("/analyze/async")
-    public ResponseEntity<AnalysisResponse> analyzeProjectAsync(
-            @Parameter(description = "项目路径", required = true)
-            @RequestParam String projectPath) {
-        try {
-            log.info("开始异步分析项目：{}", projectPath);
-
-            File projectDir = new File(projectPath);
-            if (!projectDir.exists()) {
-                return ResponseEntity.badRequest().body(AnalysisResponse.builder()
-                        .success(false)
-                        .error("项目路径不存在：" + projectPath)
-                        .build());
-            }
-
-            // 生成任务 ID 并发送 Kafka 消息
-            String taskId = UUID.randomUUID().toString();
-            analysisProducer.sendProjectAnalysisTask(taskId, projectPath);
-
-            AnalysisResponse response = AnalysisResponse.builder()
-                    .success(true)
-                    .message("分析任务已提交，请稍后查询结果")
-                    .build();
-
-            return ResponseEntity.accepted()
-                    .header("X-Task-ID", taskId)
-                    .body(response);
-
-        } catch (Exception e) {
-            log.error("异步项目分析失败：{}", projectPath, e);
-            return ResponseEntity.internalServerError().body(AnalysisResponse.builder()
-                    .success(false)
-                    .error("提交失败：" + e.getMessage())
-                    .build());
-        }
-    }
-    */
 
     /**
      * 分析单个文件
@@ -201,44 +148,6 @@ public class AnalysisController {
                     .build());
         }
     }
-
-    // TODO: Kafka 异步支持 - 恢复时取消注释
-    /**
-     * 获取异步任务状态
-     *
-     * @param taskId 任务 ID
-     * @return 任务状态
-     */
-    /*
-    @Operation(summary = "获取异步任务状态", description = "查询异步分析任务的状态")
-    @GetMapping("/task/{taskId}")
-    public ResponseEntity<AnalysisResponse> getTaskStatus(
-            @Parameter(description = "任务 ID", required = true)
-            @PathVariable String taskId) {
-        try {
-            log.info("获取任务状态：{}", taskId);
-
-            AnalysisTaskStatus status = analysisConsumer.getTaskStatus(taskId);
-            if (status == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            AnalysisResponse response = AnalysisResponse.builder()
-                    .success(true)
-                    .message("任务状态：" + status.getStatus())
-                    .build();
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("获取任务状态失败：{}", taskId, e);
-            return ResponseEntity.internalServerError().body(AnalysisResponse.builder()
-                    .success(false)
-                    .error("获取失败：" + e.getMessage())
-                    .build());
-        }
-    }
-    */
 
     /**
      * 将 ProjectAnalysis 转换为 AnalysisResponse
