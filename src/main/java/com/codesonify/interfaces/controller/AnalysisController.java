@@ -1,11 +1,11 @@
 package com.codesonify.interfaces.controller;
 
 import com.codesonify.application.service.CodeAnalysisService;
-import com.codesonify.domain.entity.AnalysisTaskStatus;
+// import com.codesonify.domain.entity.AnalysisTaskStatus;
 import com.codesonify.domain.entity.ProjectAnalysis;
 import com.codesonify.interfaces.dto.AnalysisResponse;
-import com.codesonify.repository.AnalysisConsumer;
-import com.codesonify.repository.AnalysisProducer;
+// import com.codesonify.repository.AnalysisConsumer;
+// import com.codesonify.repository.AnalysisProducer;
 import com.codesonify.repository.CacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,8 +32,9 @@ public class AnalysisController {
 
     private final CodeAnalysisService codeAnalysisService;
     private final CacheService cacheService;
-    private final AnalysisProducer analysisProducer;
-    private final AnalysisConsumer analysisConsumer;
+    // TODO: Kafka 异步支持 - 恢复时取消注释
+    // private final AnalysisProducer analysisProducer;
+    // private final AnalysisConsumer analysisConsumer;
 
     /**
      * 分析项目代码（同步）
@@ -77,12 +78,14 @@ public class AnalysisController {
         }
     }
 
+    // TODO: Kafka 异步支持 - 恢复时取消注释
     /**
      * 分析项目代码（异步）
      *
      * @param projectPath 项目路径
      * @return 任务 ID
      */
+    /*
     @Operation(summary = "分析项目代码（异步）", description = "异步分析整个项目的代码复杂度，通过 Kafka 处理")
     @PostMapping("/analyze/async")
     public ResponseEntity<AnalysisResponse> analyzeProjectAsync(
@@ -120,6 +123,7 @@ public class AnalysisController {
                     .build());
         }
     }
+    */
 
     /**
      * 分析单个文件
@@ -198,12 +202,14 @@ public class AnalysisController {
         }
     }
 
+    // TODO: Kafka 异步支持 - 恢复时取消注释
     /**
      * 获取异步任务状态
      *
      * @param taskId 任务 ID
      * @return 任务状态
      */
+    /*
     @Operation(summary = "获取异步任务状态", description = "查询异步分析任务的状态")
     @GetMapping("/task/{taskId}")
     public ResponseEntity<AnalysisResponse> getTaskStatus(
@@ -232,6 +238,7 @@ public class AnalysisController {
                     .build());
         }
     }
+    */
 
     /**
      * 将 ProjectAnalysis 转换为 AnalysisResponse

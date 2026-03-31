@@ -3,7 +3,7 @@ package com.codesonify.interfaces.controller;
 import com.codesonify.application.service.CodeSonificationService;
 import com.codesonify.domain.entity.ProjectAnalysis;
 import com.codesonify.interfaces.dto.SonificationResponse;
-import com.codesonify.repository.AnalysisProducer;
+// import com.codesonify.repository.AnalysisProducer;
 import com.codesonify.repository.CacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,7 +36,8 @@ public class SonificationController {
 
     private final CodeSonificationService codeSonificationService;
     private final CacheService cacheService;
-    private final AnalysisProducer analysisProducer;
+    // TODO: Kafka 异步支持 - 恢复时取消注释
+    // private final AnalysisProducer analysisProducer;
 
     /**
      * 生成代码音乐
@@ -255,12 +256,14 @@ public class SonificationController {
         }
     }
 
+    // TODO: Kafka 异步支持 - 恢复时取消注释
     /**
      * 异步生成代码音乐
      *
      * @param analysisId 分析 ID
      * @return 任务 ID
      */
+    /*
     @Operation(summary = "异步生成代码音乐", description = "异步将代码复杂度转换为音乐")
     @PostMapping("/generate/async")
     public ResponseEntity<SonificationResponse> generateMusicAsync(
@@ -297,6 +300,7 @@ public class SonificationController {
                     .build());
         }
     }
+    */
 
     /**
      * 计算音乐时长（估算）
