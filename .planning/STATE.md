@@ -2,13 +2,25 @@
 
 **当前 Phase**: Phase 1 - 核心分析引擎
 
-**当前状态**: 项目初始化完成，准备开始执行
+**当前状态**: Phase 1 计划已创建，准备执行 Wave 1
 
 ---
 
+## Phase 1 计划
+
+| Plan | Description | Wave | Status |
+|------|-------------|------|--------|
+| 1.1 | 实现 Java 文件解析器 | 1 | pending |
+| 1.2 | 实现圈复杂度计算器 | 1 | pending |
+| 1.3 | 实现依赖关系分析器 | 2 | pending |
+| 1.4 | 实现应用服务层 | 2 | pending |
+| 1.5 | 编写单元测试 | 3 | pending |
+
 ## 当前目标
 
-完成 Phase 1：核心分析引擎
+完成 Wave 1:
+- Plan 1.1: Java 文件解析器
+- Plan 1.2: 圈复杂度计算器
 
 ### 待完成任务
 
@@ -20,6 +32,7 @@
 - [x] 项目结构初始化
 - [x] 领域模型定义
 - [x] 基础配置完成
+- [x] Phase 1 计划创建
 
 ---
 
@@ -31,10 +44,11 @@
 
 ## 下一步
 
-1. 实现 JavaParser AST 解析器
-2. 实现圈复杂度计算器
-3. 实现依赖关系分析器
+执行 Wave 1 计划：
+1. 实现 JavaFileParser
+2. 完善 CyclomaticComplexityCalculator
+3. 创建 MethodAnalyzer 和 ClassAnalyzer
 
 ---
 
-*Last updated: 2026-03-31*
+*Last updated: 2026-03-31 - Phase 1 计划已创建*
