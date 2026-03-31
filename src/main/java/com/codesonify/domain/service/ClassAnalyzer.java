@@ -134,10 +134,14 @@ public class ClassAnalyzer {
 
         for (CompilationUnit cu : compilationUnits) {
             String filePath = cu.getStorage().map(s -> s.getPath().toString()).orElse("");
+            log.debug("处理编译单元：{}", filePath);
+
             cu.getPrimaryTypeName().ifPresent(className -> {
+                log.debug("发现类：{}", className);
                 ClassMetrics metrics = analyzeClass(cu, className, filePath);
                 if (metrics != null) {
                     allMetrics.add(metrics);
+                    log.debug("添加类指标：{}", className);
                 }
             });
         }

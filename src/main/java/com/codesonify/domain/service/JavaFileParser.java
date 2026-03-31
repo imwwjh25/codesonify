@@ -46,7 +46,8 @@ public class JavaFileParser {
         }
 
         try (FileInputStream fis = new FileInputStream(file)) {
-            CompilationUnit cu = StaticJavaParser.parse(fis);
+            // 使用 parse 方法并设置文件路径，以便 getStorage() 能返回正确信息
+            CompilationUnit cu = StaticJavaParser.parse(file);
             log.debug("文件解析成功：{}", file.getName());
             return cu;
         } catch (ParseProblemException e) {
