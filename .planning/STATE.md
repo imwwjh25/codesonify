@@ -1,8 +1,8 @@
 # CodeSonify 项目状态
 
-**当前 Phase**: Phase 2 - 音乐生成引擎
+**当前 Phase**: Phase 3 - 可视化引擎
 
-**当前状态**: Phase 2 已完成
+**当前状态**: Phase 3 已完成
 
 ---
 
@@ -59,6 +59,43 @@
 
 ---
 
+## Phase 3 总结
+
+### 交付成果
+
+**领域服务**:
+- DependencyGraphExporter - 依赖图导出器（新增）
+  - 支持导出 Draw.io (diagram.io) 格式
+  - 根据复杂度显示不同颜色（绿/黄/橙/红）
+  - 节点显示 CC、LOC、CBO 指标
+- HtmlReportGenerator - HTML 报告生成器（新增）
+  - 使用 Chart.js 显示复杂度分布图
+  - 可排序的类详情表格
+  - 响应式 CSS 设计
+  - 支持嵌入式 MIDI 播放器
+
+**应用服务**:
+- ReportGenerationService - 报告生成应用服务（新增）
+  - 编排 HTML 报告和 Draw.io 图表生成
+  - 支持完整报告和单独生成
+
+**单元测试**:
+- DependencyGraphExporterTest - 4 个测试用例（新增）
+- HtmlReportGeneratorTest - 10 个测试用例（新增）
+
+### Success Criteria 验证
+
+- [x] DependencyGraphExporter 导出 Draw.io 格式依赖图
+- [x] 根据复杂度显示不同颜色（绿/黄/橙/红）
+- [x] HtmlReportGenerator 生成 HTML 报告
+- [x] HTML 包含 Chart.js 复杂度分布图
+- [x] HTML 包含可排序的类详情表格
+- [x] HTML 支持响应式设计
+- [x] 可选嵌入 MIDI 播放器
+- [x] 单元测试覆盖核心导出和生成逻辑
+
+---
+
 ## Phase 2 计划执行状态
 
 | Plan | Description | Wave | Status |
@@ -69,13 +106,24 @@
 
 ---
 
-## 下一步
+## Phase 3 计划执行状态
 
-开始 Phase 3: 可视化引擎
-
-- VISUALIZATION-01: Draw.io 依赖关系图生成
-- VISUALIZATION-02: HTML 交互式报告页面
+| Plan | Description | Wave | Status |
+|------|-------------|------|--------|
+| 3.1 | 实现 DependencyGraphExporter | 1 | done |
+| 3.2 | 实现 HtmlReportGenerator | 2 | done |
+| 3.3 | 编写单元测试 | 3 | done |
 
 ---
 
-*Last updated: 2026-03-31 - Phase 2 完成*
+## 下一步
+
+开始 Phase 4: 集成与 API
+
+- INTERFACE-01: REST API 控制器
+- INTERFACE-02: 前端页面
+- END-TO-END-01: 完整流程集成测试
+
+---
+
+*Last updated: 2026-03-31 - Phase 3 完成，所有 65 个测试通过*
