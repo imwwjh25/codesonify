@@ -2,7 +2,7 @@
 
 **当前 Phase**: Phase 1 - 核心分析引擎
 
-**当前状态**: Wave 1 已完成，准备执行 Wave 2
+**当前状态**: Wave 1 和 Wave 2 已完成，准备执行 Wave 3
 
 ---
 
@@ -12,19 +12,18 @@
 |------|-------------|------|--------|
 | 1.1 | 实现 Java 文件解析器 | 1 | done |
 | 1.2 | 实现圈复杂度计算器 | 1 | done |
-| 1.3 | 实现依赖关系分析器 | 2 | pending |
-| 1.4 | 实现应用服务层 | 2 | pending |
+| 1.3 | 实现依赖关系分析器 | 2 | done |
+| 1.4 | 实现应用服务层 | 2 | done |
 | 1.5 | 编写单元测试 | 3 | pending |
 
 ## 当前目标
 
-完成 Wave 2:
-- Plan 1.3: 依赖关系分析器
-- Plan 1.4: 应用服务层
+完成 Wave 3:
+- Plan 1.5: 编写单元测试
 
 ### 待完成任务
 
-- [ ] ANALYZER-02: 依赖关系图构建和循环依赖检测
+无
 
 ### 已完成任务
 
@@ -36,6 +35,8 @@
 - [x] Wave 1: 圈复杂度计算器
 - [x] Wave 1: MethodAnalyzer, ClassAnalyzer
 - [x] Wave 1: CodeAnalysisService
+- [x] Wave 2: DependencyAnalyzer
+- [x] Wave 2: CodeAnalysisService
 
 ---
 
@@ -47,11 +48,12 @@
 
 ## 下一步
 
-执行 Wave 2 计划：
-1. 完善 DependencyAnalyzer (已完成)
-2. 完善 CodeAnalysisService (已完成)
-3. 开始 Wave 3: 编写单元测试
+执行 Wave 3 计划：
+1. 编写 CyclomaticComplexityCalculatorTest
+2. 编写 JavaFileParserTest
+3. 编写 DependencyAnalyzerTest
+4. 编写 CodeAnalysisServiceTest
 
 ---
 
-*Last updated: 2026-03-31 - Wave 1 完成*
+*Last updated: 2026-03-31 - Wave 2 完成*
