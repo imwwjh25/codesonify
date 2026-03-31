@@ -42,5 +42,6 @@
     "workflow_guard": false,
     "prompt_guard": true
   },
-  "agent_skills": {}
+  "agent_skills": {},
+  "model_profile": "balanced"
 }
