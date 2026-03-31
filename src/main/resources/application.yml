@@ -22,26 +22,26 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
-  # Redis 配置
-  redis:
-    host: localhost
-    port: 6379
-    database: 0
-    password: ${REDIS_PASSWORD:}
+  # Redis 配置（MVP 版本使用内存缓存，暂不需要）
+  # redis:
+  #   host: localhost
+  #   port: 6379
+  #   database: 0
+  #   password: ${REDIS_PASSWORD:}
 
-  # Kafka 配置
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
-    listener:
-      ack-mode: manual
+  # Kafka 配置（MVP 版本暂不需要）
+  # kafka:
+  #   bootstrap-servers: localhost:9092
+  #   producer:
+  #     key-serializer: org.apache.kafka.common.serialization.StringSerializer
+  #     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  #   consumer:
+  #     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  #     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+  #     properties:
+  #       spring.json.trusted.packages: "*"
+  #   listener:
+  #     ack-mode: manual
 
 # MyBatis-Plus 配置
 mybatis-plus:

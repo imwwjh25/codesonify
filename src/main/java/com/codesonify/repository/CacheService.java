@@ -1,29 +1,43 @@
 package com.codesonify.repository;
 
 import com.codesonify.domain.entity.ProjectAnalysis;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Redis 缓存服务
+ * 缓存服务（内存实现 - MVP 测试用）
  *
- * 缓存分析结果，提高访问性能
+ * 注意：生产环境应使用 Redis 实现
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CacheService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    /**
+     * 内存缓存存储
+     */
+    private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
     /**
      * 默认缓存时间（秒）
      */
     private static final long DEFAULT_TTL = 3600;
+
+    /**
+     * 定时清理过期缓存
+     */
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    public CacheService() {
+        // 每分钟清理一次过期缓存
+        scheduler.scheduleAtFixedRate(this::cleanupExpired, 1, 1, TimeUnit.MINUTES);
+    }
 
     /**
      * 缓存分析结果
@@ -44,8 +58,9 @@ public class CacheService {
      */
     public void cacheAnalysisResult(String analysisId, ProjectAnalysis analysis, long ttl) {
         String key = generateKey(analysisId);
-        redisTemplate.opsForValue().set(key, analysis, ttl, TimeUnit.SECONDS);
-        log.debug("分析结果已缓存：{}", key);
+        long expireTime = System.currentTimeMillis() + (ttl * 1000);
+        cache.put(key, new CacheEntry(analysis, expireTime));
+        log.debug("分析结果已缓存：{} (过期时间：{})", key, expireTime);
     }
 
     /**
@@ -56,10 +71,15 @@ public class CacheService {
      */
     public ProjectAnalysis getCachedAnalysis(String analysisId) {
         String key = generateKey(analysisId);
-        Object result = redisTemplate.opsForValue().get(key);
-        if (result instanceof ProjectAnalysis) {
-            log.debug("命中缓存：{}", key);
-            return (ProjectAnalysis) result;
+        CacheEntry entry = cache.get(key);
+        if (entry != null) {
+            if (System.currentTimeMillis() < entry.expireTime) {
+                log.debug("缓存命中：{}", key);
+                return entry.analysis;
+            } else {
+                log.debug("缓存已过期：{}", key);
+                cache.remove(key);
+            }
         }
         log.debug("缓存未命中：{}", key);
         return null;
@@ -72,7 +92,7 @@ public class CacheService {
      */
     public void evictAnalysisCache(String analysisId) {
         String key = generateKey(analysisId);
-        redisTemplate.delete(key);
+        cache.remove(key);
         log.debug("缓存已删除：{}", key);
     }
 
@@ -84,8 +104,14 @@ public class CacheService {
      */
     public boolean hasAnalysisCache(String analysisId) {
         String key = generateKey(analysisId);
-        Boolean exists = redisTemplate.hasKey(key);
-        return exists != null && exists;
+        CacheEntry entry = cache.get(key);
+        if (entry != null && System.currentTimeMillis() < entry.expireTime) {
+            return true;
+        }
+        if (entry != null) {
+            cache.remove(key);
+        }
+        return false;
     }
 
     /**
@@ -96,5 +122,26 @@ public class CacheService {
      */
     private String generateKey(String analysisId) {
         return "analysis:" + analysisId;
+    }
+
+    /**
+     * 清理过期缓存
+     */
+    private void cleanupExpired() {
+        long now = System.currentTimeMillis();
+        cache.entrySet().removeIf(entry -> entry.getValue().expireTime < now);
+    }
+
+    /**
+     * 缓存条目
+     */
+    private static class CacheEntry {
+        final ProjectAnalysis analysis;
+        final long expireTime;
+
+        CacheEntry(ProjectAnalysis analysis, long expireTime) {
+            this.analysis = analysis;
+            this.expireTime = expireTime;
+        }
     }
 }
