@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -41,7 +40,7 @@ public class SonificationController {
      *
      * @param analysisId 分析 ID
      */
-    @Operation(summary = "生成代码音乐", description = "将代码复杂度转换为 MIDI 音乐")
+    @Operation(summary = "生成代码音乐", description = "将代码复杂度转换为 MIDI 音乐文件")
     @PostMapping("/generate")
     public ResponseEntity<SonificationResponse> generateMusic(
             @Parameter(description = "分析 ID", required = true)
@@ -58,24 +57,18 @@ public class SonificationController {
                         .build());
             }
 
-            // 生成临时文件路径
-            String tempDir = System.getProperty("java.io.tmpdir") + "/codesonify";
-            new File(tempDir).mkdirs();
-            String outputPath = tempDir + "/" + UUID.randomUUID() + ".mid";
-
-            // 生成 MIDI 文件
-            codeSonificationService.sonifyProject(analysis.getClasses(), outputPath);
-
-            // 读取 MIDI 文件并转换为 Base64
-            byte[] midiBytes = Files.readAllBytes(Path.of(outputPath));
+            // 生成 MIDI 字节数组
+            byte[] midiBytes = codeSonificationService.generateMidiBytes(analysis.getClasses());
             String midiBase64 = Base64.getEncoder().encodeToString(midiBytes);
+
+            // 计算时长
+            double duration = calculateDuration(analysis);
 
             SonificationResponse response = SonificationResponse.builder()
                     .success(true)
                     .message("音乐生成成功")
-                    .audioFilePath(outputPath)
                     .format("MIDI")
-                    .duration(calculateDuration(analysis))
+                    .duration(duration)
                     .description(SonificationResponse.MusicDescriptionDTO.builder()
                             .key("C 大调")
                             .tempo("120 BPM")
@@ -84,7 +77,7 @@ public class SonificationController {
                             .build())
                     .build();
 
-            // 将 MIDI Base64 添加到响应头，方便前端使用
+            // 将 MIDI Base64 添加到响应头
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-MIDI-Data", midiBase64);
 

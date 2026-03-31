@@ -114,6 +114,18 @@
             margin-top: 20px;
         }
 
+        .midi-player {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .midi-player-info {
+            margin-bottom: 15px;
+            color: #2e7d32;
+        }
+
         .result-area {
             background: #f8f9fa;
             border-radius: 8px;
@@ -259,15 +271,28 @@
             </div>
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="generateMusic()">生成音乐</button>
-                <button class="btn btn-secondary" onclick="downloadMusic()">下载音乐</button>
+                <button class="btn btn-secondary" onclick="downloadMidi()">下载 MIDI</button>
             </div>
             <div class="loading" id="sonifyLoading">
                 <div class="spinner"></div>
                 <p>正在生成音乐...</p>
             </div>
             <div id="musicResult" class="hidden">
-                <p style="margin-bottom: 10px; color: #2e7d32;">✅ 音乐生成成功！点击播放按钮收听代码音乐。</p>
-                <audio id="audioPlayer" controls></audio>
+                <div class="midi-player">
+                    <p class="midi-player-info">✅ 音乐生成成功！MIDI 文件已生成。</p>
+                    <p style="margin-bottom: 10px; color: #666; font-size: 0.9rem;">
+                        💡 MIDI 文件需要使用支持的播放器播放。您可以：
+                    </p>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="downloadMidi()">📥 下载 MIDI 文件</button>
+                        <a href="https://onlinesequencer.com/" target="_blank" class="btn btn-secondary">
+                            🎹 在在线播放器中打开
+                        </a>
+                    </div>
+                    <p style="margin-top: 15px; color: #999; font-size: 0.85rem;">
+                        提示：下载后可上传到 onlinesequencer.com 或任何 MIDI 播放器中播放
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -432,9 +457,9 @@
                 document.getElementById('musicResult').classList.remove('hidden');
 
                 if (data.success && midiBase64) {
-                    showAlert('sonifyAlert', '音乐生成成功！', 'success');
-                    const audioPlayer = document.getElementById('audioPlayer');
-                    audioPlayer.src = 'data:audio/midi;base64,' + midiBase64;
+                    // 存储 MIDI 数据供下载
+                    window.currentMidiData = midiBase64;
+                    showAlert('sonifyAlert', '音乐生成成功！时长约：' + data.duration.toFixed(2) + '秒', 'success');
                 } else {
                     showAlert('sonifyAlert', data.error || '生成失败', 'error');
                 }
@@ -444,14 +469,20 @@
             }
         }
 
-        // 下载音乐
-        function downloadMusic() {
+        // 下载 MIDI 文件
+        function downloadMidi() {
             const analysisId = document.getElementById('analysisId').value;
             if (!analysisId) {
-                showAlert('sonifyAlert', '请输入分析 ID', 'error');
+                showAlert('sonifyAlert', '请先生成音乐', 'error');
                 return;
             }
-            window.open(`${API_BASE}/sonification/download/${analysisId}`, '_blank');
+
+            if (window.currentMidiData) {
+                const link = document.createElement('a');
+                link.href = 'data:audio/midi;base64,' + window.currentMidiData;
+                link.download = 'codesonify-' + analysisId + '.mid';
+                link.click();
+            }
         }
 
         // 生成报告
