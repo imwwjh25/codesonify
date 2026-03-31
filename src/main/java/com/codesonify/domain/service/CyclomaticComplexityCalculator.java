@@ -10,6 +10,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -25,8 +26,97 @@ import java.util.Optional;
  * 基于 JavaParser AST 遍历，统计决策点数量
  * 公式：CC = 1 + 决策点数量
  */
+@Slf4j
 @Service
 public class CyclomaticComplexityCalculator {
+
+    /**
+     * 计算类中所有方法的复杂度指标
+     *
+     * @param cu 编译单元
+     * @return 方法复杂度列表
+     */
+    public List<ComplexityMetrics> calculateForClass(CompilationUnit cu, String filePath) {
+        List<ComplexityMetrics> metricsList = new ArrayList<>();
+
+        cu.findAll(ClassOrInterfaceDeclaration.class).forEach(clazz -> {
+            String className = clazz.getNameAsString();
+            String packageName = cu.getPackageDeclaration()
+                    .map(pd -> pd.getNameAsString())
+                    .orElse("");
+
+            clazz.getMethods().forEach(method -> {
+                ComplexityMetrics metrics = analyzeMethod(method, className, packageName, filePath);
+                metricsList.add(metrics);
+            });
+        });
+
+        return metricsList;
+    }
+
+    /**
+     * 分析单个方法
+     *
+     * @param method 方法声明
+     * @param className 类名
+     * @param packageName 包名
+     * @param filePath 文件路径
+     * @return 方法复杂度指标
+     */
+    public ComplexityMetrics analyzeMethod(MethodDeclaration method, String className,
+                                           String packageName, String filePath) {
+        int cyclomaticComplexity = calculate(method);
+        int linesOfCode = calculateLinesOfCode(method);
+        int nestingDepth = calculateNestingDepth(method);
+        int numberOfParameters = method.getParameters().size();
+        int numberOfLocalVariables = countLocalVariables(method);
+
+        return ComplexityMetrics.builder()
+                .className(className)
+                .methodName(method.getNameAsString())
+                .signature(method.getSignature())
+                .cyclomaticComplexity(cyclomaticComplexity)
+                .linesOfCode(linesOfCode)
+                .nestingDepth(nestingDepth)
+                .numberOfParameters(numberOfParameters)
+                .numberOfLocalVariables(numberOfLocalVariables)
+                .methodType(MethodType.fromMethodName(method.getNameAsString()))
+                .level(ComplexityLevel.fromComplexity(cyclomaticComplexity))
+                .packageName(packageName)
+                .filePath(filePath)
+                .analysisTimestamp(System.currentTimeMillis())
+                .build();
+    }
+
+    /**
+     * 计算方法的代码行数
+     *
+     * @param method 方法声明
+     * @return 代码行数
+     */
+    public int calculateLinesOfCode(MethodDeclaration method) {
+        return method.getEnd().isPresent() && method.getBegin().isPresent()
+                ? method.getEnd().get().line - method.getBegin().get().line + 1
+                : 0;
+    }
+
+    /**
+     * 计算方法中的局部变量数量
+     *
+     * @param method 方法声明
+     * @return 局部变量数量
+     */
+    public int countLocalVariables(MethodDeclaration method) {
+        int[] count = {0};
+        method.accept(new VoidVisitorAdapter<Void>() {
+            @Override
+            public void visit(com.github.javaparser.ast.body.VariableDeclarator n, Void arg) {
+                count[0]++;
+                super.visit(n, arg);
+            }
+        }, null);
+        return count[0];
+    }
 
     /**
      * 计算方法的圈复杂度
