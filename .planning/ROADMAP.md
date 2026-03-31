@@ -91,8 +91,8 @@
 |-------------|-------|--------|
 | ANALYZER-01 | Phase 1 | **Done** |
 | ANALYZER-02 | Phase 1 | **Done** |
-| SONIFICATION-01 | Phase 2 | Pending |
-| SONIFICATION-02 | Phase 2 | Pending |
+| SONIFICATION-01 | Phase 2 | **Done** |
+| SONIFICATION-02 | Phase 2 | **Done** |
 | VISUALIZATION-01 | Phase 3 | Pending |
 | VISUALIZATION-02 | Phase 3 | Pending |
 | API-01 | Phase 4 | Pending |
