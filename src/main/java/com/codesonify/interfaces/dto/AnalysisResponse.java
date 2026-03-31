@@ -1,4 +1,4 @@
-package com.codesonify.interface.dto;
+package com.codesonify.interfaces.dto;
 
 import lombok.Builder;
 import lombok.Data;

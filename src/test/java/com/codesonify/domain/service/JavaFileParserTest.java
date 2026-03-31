@@ -47,8 +47,8 @@ class JavaFileParserTest {
         assertNotNull(cu, "解析结果不应为空");
         assertTrue(cu.getPackageDeclaration().isPresent(), "应该有包声明");
         assertEquals("com.test", cu.getPackageDeclaration().get().getNameAsString());
-        assertTrue(cu.getPrimaryTypeName().isPresent(), "应该有主类名");
-        assertEquals("HelloWorld", cu.getPrimaryTypeName().get());
+        assertFalse(cu.getTypes().isEmpty(), "应该有主类名");
+        assertEquals("HelloWorld", cu.getTypes().get(0).getNameAsString());
     }
 
     @Test

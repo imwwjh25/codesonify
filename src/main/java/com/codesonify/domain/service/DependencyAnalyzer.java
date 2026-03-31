@@ -70,23 +70,26 @@ public class DependencyAnalyzer {
         // 方法参数中的类型
         clazz.getMethods().forEach(method -> {
             method.getParameters().forEach(param -> {
-                param.getType().asClassOrInterfaceType().ifPresent(type -> {
-                    dependencies.add(type.getNameAsString());
-                });
+                var type = param.getType();
+                if (type.isClassOrInterfaceType()) {
+                    dependencies.add(type.asClassOrInterfaceType().getNameAsString());
+                }
             });
 
             // 方法返回类型
-            method.getType().asClassOrInterfaceType().ifPresent(type -> {
-                dependencies.add(type.getNameAsString());
-            });
+            var returnType = method.getType();
+            if (returnType.isClassOrInterfaceType()) {
+                dependencies.add(returnType.asClassOrInterfaceType().getNameAsString());
+            }
         });
 
         // 字段类型
         clazz.getFields().forEach(field -> {
             field.getVariables().forEach(var -> {
-                var.getType().asClassOrInterfaceType().ifPresent(type -> {
-                    dependencies.add(type.getNameAsString());
-                });
+                var type = var.getType();
+                if (type.isClassOrInterfaceType()) {
+                    dependencies.add(type.asClassOrInterfaceType().getNameAsString());
+                }
             });
         });
 

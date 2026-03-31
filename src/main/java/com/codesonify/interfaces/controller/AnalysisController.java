@@ -1,7 +1,7 @@
-package com.codesonify.interface.controller;
+package com.codesonify.interfaces.controller;
 
-import com.codesonify.interface.dto.AnalysisResponse;
-import com.codesonify.interface.dto.SonificationResponse;
+import com.codesonify.interfaces.dto.AnalysisResponse;
+import com.codesonify.interfaces.dto.SonificationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

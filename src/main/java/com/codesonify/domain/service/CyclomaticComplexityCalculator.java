@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -74,7 +75,7 @@ public class CyclomaticComplexityCalculator {
         return ComplexityMetrics.builder()
                 .className(className)
                 .methodName(method.getNameAsString())
-                .signature(method.getSignature())
+                .signature(method.getSignature().asString())
                 .cyclomaticComplexity(cyclomaticComplexity)
                 .linesOfCode(linesOfCode)
                 .nestingDepth(nestingDepth)
@@ -131,37 +132,37 @@ public class CyclomaticComplexityCalculator {
         method.accept(new VoidVisitorAdapter<Void>() {
 
             @Override
-            public void visit(IfStmt n, Void arg) {
+            public void visit(final IfStmt n, final Void arg) {
                 complexity[0]++; // if 语句
                 super.visit(n, arg);
             }
 
             @Override
-            public void visit(ForStmt n, Void arg) {
+            public void visit(final ForStmt n, final Void arg) {
                 complexity[0]++; // for 循环
                 super.visit(n, arg);
             }
 
             @Override
-            public void visit(ForEachStmt n, Void arg) {
+            public void visit(final com.github.javaparser.ast.stmt.ForEachStmt n, final Void arg) {
                 complexity[0]++; // foreach 循环
                 super.visit(n, arg);
             }
 
             @Override
-            public void visit(WhileStmt n, Void arg) {
+            public void visit(final WhileStmt n, final Void arg) {
                 complexity[0]++; // while 循环
                 super.visit(n, arg);
             }
 
             @Override
-            public void visit(DoStmt n, Void arg) {
+            public void visit(final DoStmt n, final Void arg) {
                 complexity[0]++; // do-while 循环
                 super.visit(n, arg);
             }
 
             @Override
-            public void visit(SwitchEntry n, Void arg) {
+            public void visit(final SwitchEntry n, final Void arg) {
                 if (!n.getLabels().isEmpty()) {
                     complexity[0]++; // switch case
                 }
@@ -169,19 +170,19 @@ public class CyclomaticComplexityCalculator {
             }
 
             @Override
-            public void visit(CatchClause n, Void arg) {
+            public void visit(final CatchClause n, final Void arg) {
                 complexity[0]++; // catch 块
                 super.visit(n, arg);
             }
 
             @Override
-            public void visit(ConditionalExpr n, Void arg) {
+            public void visit(final ConditionalExpr n, final Void arg) {
                 complexity[0]++; // 三元运算符
                 super.visit(n, arg);
             }
 
             @Override
-            public void visit(BinaryExpr n, Void arg) {
+            public void visit(final BinaryExpr n, final Void arg) {
                 // 逻辑运算符 && 和 ||
                 if (n.getOperator() == BinaryExpr.Operator.AND ||
                     n.getOperator() == BinaryExpr.Operator.OR) {
@@ -216,7 +217,7 @@ public class CyclomaticComplexityCalculator {
             calculateNestingDepthRecursive(ifStmt.getThenStmt(), newDepth, maxDepth);
             ifStmt.getElseStmt().ifPresent(elseStmt ->
                 calculateNestingDepthRecursive(elseStmt, newDepth, maxDepth));
-        } else if (stmt instanceof ForStmt || stmt instanceof ForeachStmt || stmt instanceof WhileStmt) {
+        } else if (stmt instanceof ForStmt || stmt instanceof com.github.javaparser.ast.stmt.ForEachStmt || stmt instanceof WhileStmt) {
             int newDepth = currentDepth + 1;
             maxDepth[0] = Math.max(maxDepth[0], newDepth);
             // 继续遍历循环体

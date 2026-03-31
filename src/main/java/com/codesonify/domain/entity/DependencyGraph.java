@@ -1,6 +1,7 @@
 package com.codesonify.domain.entity;
 
 import lombok.Data;
+import lombok.Builder;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.alg.cycle.CycleDetector;

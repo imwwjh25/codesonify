@@ -1,6 +1,7 @@
 package com.codesonify.application.service;
 
 import com.codesonify.domain.entity.ClassMetrics;
+import com.codesonify.domain.entity.ComplexityMetrics;
 import com.codesonify.domain.entity.DependencyGraph;
 import com.codesonify.domain.entity.ProjectAnalysis;
 import com.codesonify.domain.service.ClassAnalyzer;
@@ -104,7 +105,7 @@ public class CodeAnalysisService {
         // 计算平均复杂度
         stats.setAverageCyclomaticComplexity(classes.stream()
                 .flatMap(c -> c.getMethods().stream())
-                .mapToInt(ClassMetrics::getAverageComplexity)
+                .mapToInt(ComplexityMetrics::getCyclomaticComplexity)
                 .average()
                 .orElse(0.0));
 
@@ -135,7 +136,7 @@ public class CodeAnalysisService {
         int simple = 0, moderate = 0, complex = 0, veryComplex = 0;
 
         for (ClassMetrics clazz : classes) {
-            for (ClassMetrics method : clazz.getMethods()) {
+            for (ComplexityMetrics method : clazz.getMethods()) {
                 switch (method.getLevel()) {
                     case SIMPLE -> simple++;
                     case MODERATE -> moderate++;

@@ -88,7 +88,7 @@ public class ClassAnalyzer {
 
         // 计算构造函数数量
         int numberOfConstructors = (int) clazz.getMethods().stream()
-                .filter(MethodDeclaration::isConstructor)
+                .filter(m -> m.getNameAsString().equals("<init>"))
                 .count();
 
         // 计算静态方法数量
