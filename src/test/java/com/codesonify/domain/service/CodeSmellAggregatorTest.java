@@ -31,9 +31,11 @@ class CodeSmellAggregatorTest {
         Map<SmellType, List<CodeSmell>> byType = aggregator.aggregateByType(codeSmells);
 
         assertEquals(3, byType.get(SmellType.LONG_METHOD).size());
-        assertEquals(2, byType.get(SmellType.LARGE_CLASS).size());
+        assertEquals(1, byType.get(SmellType.LARGE_CLASS).size()); // 修正：只有1个LARGE_CLASS
         assertEquals(1, byType.get(SmellType.HIGH_COUPLING).size());
-        assertEquals(0, byType.get(SmellType.DUPLICATE_CODE).size());
+        assertNotNull(byType.get(SmellType.GOD_CLASS)); // GOD_CLASS应该存在
+        assertEquals(1, byType.get(SmellType.GOD_CLASS).size());
+        assertNull(byType.get(SmellType.DUPLICATE_CODE)); // DUPLICATE_CODE不存在
     }
 
     @Test
@@ -99,7 +101,7 @@ class CodeSmellAggregatorTest {
         assertNotNull(stats.getTypeDistribution());
         assertNotNull(stats.getSeverityDistribution());
         assertNotNull(stats.getTopAffectedClasses());
-        assertEquals(3, stats.getTopAffectedClasses().get(0)); // ClassA 有 3 个异味
+        assertEquals("ClassA", stats.getTopAffectedClasses().get(0)); // ClassA 有 3 个异味
     }
 
     @Test

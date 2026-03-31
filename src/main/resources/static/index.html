@@ -296,6 +296,31 @@
             </div>
         </div>
 
+        <!-- 代码异味检测 -->
+        <div class="card">
+            <h2>🔍 代码异味检测</h2>
+            <div id="codesmellAlert"></div>
+            <div class="form-group">
+                <label for="codesmellProjectPath">项目路径</label>
+                <input type="text" id="codesmellProjectPath" class="form-control" placeholder="/path/to/your/project">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="detectDuplicateCode" checked>
+                    检测重复代码
+                </label>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="detectCodeSmells()">检测代码异味</button>
+                <button class="btn btn-secondary" onclick="viewCodeSmells()">查看检测结果</button>
+            </div>
+            <div class="loading" id="codesmellLoading">
+                <div class="spinner"></div>
+                <p>正在检测代码异味...</p>
+            </div>
+            <div id="codesmellResult" class="hidden"></div>
+        </div>
+
         <!-- 生成报告 -->
         <div class="card">
             <h2>📄 生成报告</h2>
@@ -560,6 +585,158 @@
                 return;
             }
             window.open(`/visualization-3d.html?analysisId=${encodeURIComponent(analysisId)}`, '_blank');
+        }
+
+        // 检测代码异味
+        async function detectCodeSmells() {
+            const projectPath = document.getElementById('codesmellProjectPath').value;
+            if (!projectPath) {
+                showAlert('codesmellAlert', '请输入项目路径', 'error');
+                return;
+            }
+
+            const detectDuplicate = document.getElementById('detectDuplicateCode').checked;
+
+            document.getElementById('codesmellLoading').classList.add('show');
+            document.getElementById('codesmellResult').classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/codesmells/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        projectPath: projectPath,
+                        detectDuplicateCode: detectDuplicate
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('请求失败');
+                }
+
+                const data = await response.json();
+
+                document.getElementById('codesmellLoading').classList.remove('show');
+                document.getElementById('codesmellResult').classList.remove('hidden');
+
+                // 显示检测结果
+                displayCodeSmellResult(data);
+                showAlert('codesmellAlert', '代码异味检测完成！', 'success');
+
+                // 存储 analysisId 供后续使用
+                window.currentCodeSmellAnalysisId = data.analysisId;
+            } catch (error) {
+                document.getElementById('codesmellLoading').classList.remove('show');
+                showAlert('codesmellAlert', '请求失败：' + error.message, 'error');
+            }
+        }
+
+        // 显示代码异味检测结果
+        function displayCodeSmellResult(data) {
+            const html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>${data.totalCount}</h3>
+                        <p>异味总数</p>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);">
+                        <h3>${data.severityStats.critical}</h3>
+                        <p>严重</p>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);">
+                        <h3>${data.severityStats.high}</h3>
+                        <p>高</p>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);">
+                        <h3>${data.smellScore.toFixed(1)}</h3>
+                        <p>异味评分</p>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+                    <p><strong>质量评分:</strong> ${data.qualityScore.toFixed(1)} / 100</p>
+                    <p><strong>质量等级:</strong> ${data.qualityLevel}</p>
+                </div>
+                <div class="result-area">
+                    <p style="margin-bottom: 10px; color: #666;">
+                        📊 类型分布: ${Object.entries(data.typeDistribution || {})
+                            .map(([type, count]) => `${type}(${count})`)
+                            .join(', ')}
+                    </p>
+                    <p style="color: #666;">
+                        🔥 最受影响的类: ${data.topAffectedClasses?.slice(0, 5).join(', ') || '无'}
+                    </p>
+                    <details style="margin-top: 15px;">
+                        <summary style="cursor: pointer; color: #667eea;">查看完整结果</summary>
+                        <pre style="margin-top: 10px;">${JSON.stringify(data, null, 2)}</pre>
+                    </details>
+                </div>
+            `;
+            document.getElementById('codesmellResult').innerHTML = html;
+        }
+
+        // 查看代码异味详情
+        async function viewCodeSmells() {
+            const analysisId = window.currentCodeSmellAnalysisId;
+            if (!analysisId) {
+                showAlert('codesmellAlert', '请先进行代码异味检测', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/codesmells/${analysisId}/smells`);
+                if (!response.ok) {
+                    throw new Error('请求失败');
+                }
+
+                const smells = await response.json();
+
+                if (smells.length === 0) {
+                    showAlert('codesmellAlert', '未发现代码异味，代码质量良好！', 'success');
+                    return;
+                }
+
+                // 显示异味详情
+                const html = `
+                    <div style="margin-top: 20px;">
+                        <h3 style="margin-bottom: 15px;">发现 ${smells.length} 个代码异味</h3>
+                        ${smells.map(smell => `
+                            <div style="padding: 15px; margin-bottom: 10px; border-left: 4px solid ${getSeverityColor(smell.severity)}; background: #f8f9fa; border-radius: 4px;">
+                                <div style="font-weight: bold; color: ${getSeverityColor(smell.severity)};">
+                                    ${smell.type.displayName} - ${smell.severity.displayName}
+                                </div>
+                                <div style="margin-top: 5px; color: #333;">
+                                    <strong>类:</strong> ${smell.className}
+                                    ${smell.methodName ? ` | <strong>方法:</strong> ${smell.methodName}` : ''}
+                                </div>
+                                <div style="margin-top: 5px; color: #666;">
+                                    ${smell.message}
+                                </div>
+                                <div style="margin-top: 5px; color: #2e7d32; font-size: 0.9rem;">
+                                    💡 ${smell.suggestion}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                document.getElementById('codesmellResult').innerHTML = html;
+                showAlert('codesmellAlert', '获取详情成功', 'success');
+            } catch (error) {
+                showAlert('codesmellAlert', '请求失败：' + error.message, 'error');
+            }
+        }
+
+        // 获取严重程度颜色
+        function getSeverityColor(severity) {
+            const colors = {
+                'CRITICAL': '#f44336',
+                'HIGH': '#ff9800',
+                'MEDIUM': '#ffeb3b',
+                'LOW': '#4caf50'
+            };
+            return colors[severity] || '#666';
         }
     </script>
 </body>
