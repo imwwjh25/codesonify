@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 代码复杂度可视化 - CodeSonify</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        #info-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            transform: translateX(340px);
+            transition: transform 0.3s ease;
+        }
+
+        #info-panel.visible {
+            transform: translateX(0);
+        }
+
+        #info-panel h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        #info-panel .info-row {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        #info-panel .label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        #info-panel .value {
+            color: #333;
+            margin-left: 5px;
+        }
+
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        #controls h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .legend {
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .legend-color.simple { background: #28a745; }
+        .legend-color.moderate { background: #ffc107; }
+        .legend-color.complex { background: #fd7e14; }
+        .legend-color.very-complex { background: #dc3545; }
+
+        #stats {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        #stats .stat {
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        #loading .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #error {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(220, 53, 69, 0.95);
+            border-radius: 12px;
+            padding: 40px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+        }
+
+        #error h2 {
+            margin-bottom: 15px;
+        }
+
+        #error button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: white;
+            color: #dc3545;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        #close-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        #close-info:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="controls">
+        <h3>🎮 控制说明</h3>
+        <div style="font-size: 0.85rem; color: #666; line-height: 1.6;">
+            🖱️ 左键拖拽：旋转<br>
+            🔍 滚轮：缩放<br>
+            ↔️ 右键拖拽：平移<br>
+            👆 点击节点：查看详情
+        </div>
+
+        <div class="legend">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">🎨 复杂度图例</h3>
+            <div class="legend-item">
+                <div class="legend-color simple"></div>
+                <span>简单 (1-5)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color moderate"></div>
+                <span>中等 (6-10)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color complex"></div>
+                <span>复杂 (11-20)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color very-complex"></div>
+                <span>非常复杂 (>20)</span>
+            </div>
+        </div>
+
+        <div id="stats">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">📊 统计信息</h3>
+            <div class="stat">类节点: <span id="stat-nodes">-</span></div>
+            <div class="stat">依赖连线: <span id="stat-edges">-</span></div>
+        </div>
+    </div>
+
+    <div id="info-panel">
+        <button id="close-info">&times;</button>
+        <h2>📋 类详情</h2>
+        <div id="info-content"></div>
+    </div>
+
+    <div id="loading" class="visible">
+        <div class="spinner"></div>
+        <p>正在加载 3D 场景...</p>
+    </div>
+
+    <div id="error" style="display: none;">
+        <h2>❌ 加载失败</h2>
+        <p id="error-message"></p>
+        <button onclick="window.close()">关闭</button>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Three.js 全局变量
+        let scene, camera, renderer, controls;
+        let raycaster, mouse;
+        let nodes = [];
+        let edges = [];
+        let hoveredNode = null;
+
+        // 获取分析 ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const analysisId = urlParams.get('analysisId');
+
+        if (!analysisId) {
+            showError('未提供分析 ID，请从主页进入');
+        } else {
+            loadSceneData();
+        }
+
+        // 加载 3D 场景数据
+        async function loadSceneData() {
+            try {
+                const response = await fetch(`/api/visualization/3d/${analysisId}`);
+                const data = await response.json();
+
+                document.getElementById('loading').classList.remove('visible');
+
+                if (!data.success) {
+                    showError(data.error || '加载失败');
+                    return;
+                }
+
+                // 更新统计信息
+                const stats = data.sceneData.statistics;
+                document.getElementById('stat-nodes').textContent = stats.totalNodes;
+                document.getElementById('stat-edges').textContent = stats.totalEdges;
+
+                // 初始化 3D 场景
+                initScene(data.sceneData);
+
+            } catch (error) {
+                document.getElementById('loading').classList.remove('visible');
+                showError('请求失败：' + error.message);
+            }
+        }
+
+        // 初始化 3D 场景
+        function initScene(sceneData) {
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+
+            // 创建相机
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                2000
+            );
+            camera.position.set(0, 200, 400);
+
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // 创建控制器
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 50;
+            controls.maxDistance = 1000;
+            controls.target.set(0, 0, 0);
+
+            // 添加环境光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            // 添加方向光
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(100, 200, 100);
+            scene.add(directionalLight);
+
+            // 添加点光源
+            const pointLight = new THREE.PointLight(0xffffff, 0.5);
+            pointLight.position.set(0, 100, 0);
+            scene.add(pointLight);
+
+            // 创建节点
+            createNodes(sceneData.nodes);
+
+            // 创建连线
+            createEdges(sceneData.edges);
+
+            // 添加地面网格
+            const gridHelper = new THREE.GridHelper(1000, 50, 0x444444, 0x333333);
+            scene.add(gridHelper);
+
+            // 射线检测
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // 事件监听
+            window.addEventListener('resize', onWindowResize);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('click', onClick);
+
+            // 关闭信息面板
+            document.getElementById('close-info').addEventListener('click', () => {
+                document.getElementById('info-panel').classList.remove('visible');
+            });
+
+            // 开始渲染循环
+            animate();
+        }
+
+        // 创建节点
+        function createNodes(nodeData) {
+            nodeData.forEach(node => {
+                const geometry = new THREE.BoxGeometry(node.size, node.height, node.size);
+                const material = new THREE.MeshPhongMaterial({
+                    color: node.color,
+                    transparent: true,
+                    opacity: 0.9,
+                    shininess: 100
+                });
+
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(node.x, node.height / 2, node.z);
+                mesh.userData = node.metadata;
+
+                // 添加边框
+                const edges = new THREE.EdgesGeometry(geometry);
+                const line = new THREE.LineSegments(
+                    edges,
+                    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 })
+                );
+                mesh.add(line);
+
+                scene.add(mesh);
+                nodes.push(mesh);
+            });
+        }
+
+        // 创建连线
+        function createEdges(edgeData) {
+            edgeData.forEach(edge => {
+                const fromNode = nodes.find(n => n.userData.className === edge.from);
+                const toNode = nodes.find(n => n.userData.className === edge.to);
+
+                if (fromNode && toNode) {
+                    const points = [
+                        fromNode.position.clone(),
+                        toNode.position.clone()
+                    ];
+
+                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const material = new THREE.LineBasicMaterial({
+                        color: 0x667eea,
+                        transparent: true,
+                        opacity: 0.4
+                    });
+
+                    const line = new THREE.Line(geometry, material);
+                    scene.add(line);
+                    edges.push(line);
+                }
+            });
+        }
+
+        // 窗口大小改变
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 鼠标移动
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // 射线检测
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(nodes);
+
+            // 恢复之前的 hover 状态
+            if (hoveredNode && (!intersects.length || intersects[0].object !== hoveredNode)) {
+                hoveredNode.material.emissive.setHex(0x000000);
+                document.body.style.cursor = 'default';
+                hoveredNode = null;
+            }
+
+            // 设置新的 hover 状态
+            if (intersects.length > 0) {
+                const node = intersects[0].object;
+                if (node !== hoveredNode) {
+                    node.material.emissive.setHex(0x333333);
+                    document.body.style.cursor = 'pointer';
+                    hoveredNode = node;
+                }
+            }
+        }
+
+        // 点击事件
+        function onClick(event) {
+            if (hoveredNode) {
+                showNodeInfo(hoveredNode.userData);
+            } else {
+                document.getElementById('info-panel').classList.remove('visible');
+            }
+        }
+
+        // 显示节点信息
+        function showNodeInfo(metadata) {
+            const content = `
+                <div class="info-row">
+                    <span class="label">类名:</span>
+                    <span class="value">${metadata.className}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">包名:</span>
+                    <span class="value">${metadata.packageName}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">方法数:</span>
+                    <span class="value">${metadata.totalMethods}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">平均复杂度:</span>
+                    <span class="value">${metadata.averageComplexity.toFixed(1)}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">最大复杂度:</span>
+                    <span class="value">${metadata.maxComplexity}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">代码行数:</span>
+                    <span class="value">${metadata.linesOfCode}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">耦合度:</span>
+                    <span class="value">${metadata.coupling}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">字段数:</span>
+                    <span class="value">${metadata.numberOfFields}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">构造函数:</span>
+                    <span class="value">${metadata.numberOfConstructors}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">静态方法:</span>
+                    <span class="value">${metadata.numberOfStaticMethods}</span>
+                </div>
+            `;
+
+            document.getElementById('info-content').innerHTML = content;
+            document.getElementById('info-panel').classList.add('visible');
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 显示错误
+        function showError(message) {
+            document.getElementById('loading').classList.remove('visible');
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
